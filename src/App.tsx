@@ -27,7 +27,7 @@ type CartItem = {
   note?: string;
 };
 
-const HERO = "/images/hero-pizza.jpg";
+const HERO = `${import.meta.env.BASE_URL}images/hero-pizza.jpg`;
 const INTERIOR =
   "https://images.pexels.com/photos/36353801/pexels-photo-36353801.jpeg?auto=compress&cs=tinysrgb&w=1600";
 const CHEF =
