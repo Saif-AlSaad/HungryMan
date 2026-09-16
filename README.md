@@ -105,7 +105,6 @@ npm run preview
 
 ## Author
 
-**Saif Al Saad**
-BSc in *Software Engineering*
-Major in *Software Quality Assurance & Testing*
-*Daffodil Internatiol University*
+**Saif Al Saad** <br>
+BSc in *Software Engineering* <br>
+Major in *Software Quality Assurance & Testing* <br> *Daffodil Internatiol University*
