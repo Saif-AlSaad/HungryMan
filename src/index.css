@@ -35,9 +35,14 @@
   --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.35);
   --shadow-lift: 0 12px 40px rgba(0, 0, 0, 0.28);
 
-  --motion-fast: 180ms;
-  --motion-base: 280ms;
-  --motion-slow: 480ms;
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --motion-fast: 200ms;
+  --motion-base: 360ms;
+  --motion-slow: 650ms;
+  --motion-deliberate: 900ms;
 }
 
 * {
@@ -46,6 +51,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 88px;
 }
 
 body {
@@ -100,9 +106,12 @@ textarea {
   text-transform: uppercase;
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--motion-base) ease, color var(--motion-base) ease,
-    border-color var(--motion-base) ease, transform var(--motion-fast) ease,
-    opacity var(--motion-fast) ease;
+  transition: background var(--motion-base) var(--ease-smooth),
+    color var(--motion-base) var(--ease-smooth),
+    border-color var(--motion-base) var(--ease-smooth),
+    transform var(--motion-fast) var(--ease-smooth),
+    box-shadow var(--motion-base) var(--ease-smooth),
+    opacity var(--motion-fast) var(--ease-smooth);
 }
 
 .btn:disabled {
@@ -118,6 +127,8 @@ textarea {
 
 .btn-primary:hover:not(:disabled) {
   background: var(--color-gold-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(201, 163, 106, 0.28);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -133,6 +144,12 @@ textarea {
 .btn-ghost:hover:not(:disabled) {
   border-color: var(--color-gold);
   color: var(--color-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-ghost:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn-dark {
@@ -143,6 +160,7 @@ textarea {
 
 .btn-dark:hover:not(:disabled) {
   background: var(--color-ink-soft);
+  transform: translateY(-2px);
 }
 
 .field {
@@ -154,15 +172,19 @@ textarea {
   color: var(--color-cream);
   border-radius: var(--radius-md);
   font-size: 15px;
-  transition: border-color var(--motion-fast) ease;
+  transition: border-color var(--motion-fast) var(--ease-smooth),
+    box-shadow var(--motion-fast) var(--ease-smooth),
+    background var(--motion-fast) var(--ease-smooth);
 }
 
 .field:hover {
-  border-color: rgba(201, 163, 106, 0.35);
+  border-color: rgba(201, 163, 106, 0.4);
 }
 
 .field:focus {
   border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px rgba(201, 163, 106, 0.18);
+  outline: none;
 }
 
 .field::placeholder {
@@ -178,11 +200,13 @@ textarea {
 }
 
 .menu-card {
-  transition: transform var(--motion-base) ease, box-shadow var(--motion-base) ease;
+  transition: transform var(--motion-base) var(--ease-smooth),
+    box-shadow var(--motion-base) var(--ease-smooth);
+  will-change: transform;
 }
 
 .menu-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
 }
 
 .menu-card:focus-visible {
@@ -190,12 +214,174 @@ textarea {
   outline-offset: 4px;
 }
 
-.drawer {
-  animation: slideIn var(--motion-base) ease;
+/* Page Transition Container */
+.page-transition {
+  animation: pageFadeIn 550ms var(--ease-smooth) both;
 }
 
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progressive Scroll Reveal for Sections */
+.section-reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 850ms var(--ease-smooth), transform 850ms var(--ease-smooth);
+  will-change: opacity, transform;
+}
+
+.js-enabled .section-reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+.js-enabled .section-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered Children Inside Sections */
+.reveal-child {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 800ms var(--ease-smooth), transform 800ms var(--ease-smooth);
+  will-change: opacity, transform;
+}
+
+.js-enabled .section-reveal:not(.is-visible) .reveal-child {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.js-enabled .section-reveal.is-visible .reveal-child {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Card Fade In for Menu Items */
+.card-fade-in {
+  animation: cardFadeIn 480ms var(--ease-smooth) both;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Section Image Subtle Zoom */
+.hero-image {
+  animation: heroZoom 1400ms var(--ease-smooth) both;
+}
+
+@keyframes heroZoom {
+  from {
+    transform: scale(1.08);
+    opacity: 0.82;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Smooth Fade Up Staggers */
 .fade-up {
-  animation: fadeUp var(--motion-slow) ease both;
+  animation: fadeUp 850ms var(--ease-smooth) both;
+}
+
+.fade-up-1 {
+  animation: fadeUp 850ms var(--ease-smooth) 80ms both;
+}
+
+.fade-up-2 {
+  animation: fadeUp 850ms var(--ease-smooth) 180ms both;
+}
+
+.fade-up-3 {
+  animation: fadeUp 850ms var(--ease-smooth) 280ms both;
+}
+
+.fade-up-4 {
+  animation: fadeUp 850ms var(--ease-smooth) 380ms both;
+}
+
+.fade-up-5 {
+  animation: fadeUp 850ms var(--ease-smooth) 480ms both;
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Drawers & Modals */
+.drawer {
+  animation: slideIn var(--motion-base) var(--ease-smooth);
+}
+
+.backdrop-fade {
+  animation: backdropFadeIn 350ms var(--ease-smooth) both;
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+.drawer-slide {
+  animation: slideInRight 420ms var(--ease-smooth) both;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.modal-pop {
+  animation: modalPop 420ms var(--ease-smooth) both;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes slideIn {
@@ -209,30 +395,53 @@ textarea {
   }
 }
 
-@keyframes fadeUp {
-  from {
-    transform: translateY(18px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.toast {
+  animation: toastIn 380ms var(--ease-smooth) both;
 }
 
 @keyframes toastIn {
   from {
-    transform: translateY(12px);
+    transform: translate(-50%, 16px) scale(0.95);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translate(-50%, 0) scale(1);
     opacity: 1;
   }
 }
 
-.toast {
-  animation: toastIn var(--motion-base) ease;
+.mobile-menu-drawer {
+  animation: mobileMenuSlide 320ms var(--ease-smooth) both;
+  transform-origin: top;
+}
+
+@keyframes mobileMenuSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Accessibility: Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .js-enabled .section-reveal:not(.is-visible),
+  .js-enabled .section-reveal:not(.is-visible) .reveal-child {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .scrollbar-thin::-webkit-scrollbar {

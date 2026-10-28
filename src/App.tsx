@@ -83,6 +83,44 @@ export default function App() {
     };
   }, [cartOpen, checkoutOpen, activeItem, mobileOpen, orderDone]);
 
+  useEffect(() => {
+    document.documentElement.classList.add("js-enabled");
+
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        rootMargin: "0px 0px -40px 0px",
+        threshold: 0.08,
+      }
+    );
+
+    const timer = setTimeout(() => {
+      const elements = document.querySelectorAll<HTMLElement>(".section-reveal");
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          el.classList.add("is-visible");
+        } else {
+          observer.observe(el);
+        }
+      });
+    }, 30);
+
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [page]);
+
   const go = (next: Page) => setPage(next);
 
   const cartCount = cart.reduce((n, c) => n + c.qty, 0);
@@ -126,7 +164,7 @@ export default function App() {
         setMobileOpen={setMobileOpen}
       />
 
-      <main id="main">
+      <main id="main" key={page} className="page-transition">
         {page === "home" && <Home go={go} onOpenItem={setActiveItem} />}
         {page === "menu" && (
           <MenuPage
@@ -245,19 +283,19 @@ function Header({
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         scrolled || mobileOpen
-          ? "border-b border-[var(--color-line)] bg-[rgba(14,12,10,0.92)] backdrop-blur-md"
+          ? "border-b border-[var(--color-line)] bg-[rgba(14,12,10,0.92)] backdrop-blur-md shadow-lg"
           : "bg-transparent"
       }`}
     >
       <div className="mx-auto flex h-[78px] max-w-[1280px] items-center justify-between px-5 md:px-8">
         <button
           onClick={() => go("home")}
-          className="flex items-center gap-3 bg-transparent p-0 text-left"
+          className="flex items-center gap-3 bg-transparent p-0 text-left transition-transform duration-300 hover:scale-[1.02]"
           aria-label="HungryMan home"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-gold)] font-display text-lg text-[var(--color-gold)]">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-gold)] font-display text-lg text-[var(--color-gold)] transition-colors duration-300">
             H
           </span>
           <span>
@@ -273,8 +311,8 @@ function Header({
             <button
               key={l.id}
               onClick={() => go(l.id)}
-              className={`bg-transparent p-0 text-[13px] uppercase tracking-[0.18em] transition-colors ${
-                page === l.id ? "text-[var(--color-gold)]" : "text-[var(--color-cream-muted)] hover:text-[var(--color-cream)]"
+              className={`bg-transparent p-0 text-[13px] uppercase tracking-[0.18em] transition-all duration-300 ${
+                page === l.id ? "text-[var(--color-gold)] font-medium" : "text-[var(--color-cream-muted)] hover:text-[var(--color-cream)]"
               }`}
               aria-current={page === l.id ? "page" : undefined}
             >
@@ -289,40 +327,40 @@ function Header({
           </button>
           <button
             onClick={onCart}
-            className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-line-strong)] bg-transparent text-[var(--color-cream)]"
+            className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-line-strong)] bg-transparent text-[var(--color-cream)] transition-all duration-300 hover:border-[var(--color-gold)] hover:scale-105"
             aria-label={`Open cart, ${cartCount} items`}
           >
             <CartIcon />
             {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-gold)] px-1 text-[11px] font-semibold text-[var(--color-ink)]">
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-gold)] px-1 text-[11px] font-semibold text-[var(--color-ink)] animate-pulse">
                 {cartCount}
               </span>
             )}
           </button>
           <button
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-line)] bg-transparent lg:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-line)] bg-transparent transition-colors hover:border-[var(--color-gold)] lg:hidden"
             aria-expanded={mobileOpen}
             aria-label="Toggle menu"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             <span className="sr-only">Menu</span>
             <span className="flex flex-col gap-1.5">
-              <span className={`h-px w-5 bg-[var(--color-cream)] transition ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
-              <span className={`h-px w-5 bg-[var(--color-cream)] transition ${mobileOpen ? "opacity-0" : ""}`} />
-              <span className={`h-px w-5 bg-[var(--color-cream)] transition ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`} />
+              <span className={`h-px w-5 bg-[var(--color-cream)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
+              <span className={`h-px w-5 bg-[var(--color-cream)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${mobileOpen ? "opacity-0" : ""}`} />
+              <span className={`h-px w-5 bg-[var(--color-cream)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`} />
             </span>
           </button>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-[var(--color-line)] bg-[var(--color-ink)] px-5 py-6 lg:hidden">
+        <div className="mobile-menu-drawer border-t border-[var(--color-line)] bg-[var(--color-ink)] px-5 py-6 lg:hidden">
           <nav className="flex flex-col gap-4" aria-label="Mobile">
             {links.map((l) => (
               <button
                 key={l.id}
                 onClick={() => go(l.id)}
-                className="bg-transparent p-0 text-left font-display text-3xl text-[var(--color-cream)]"
+                className="bg-transparent p-0 text-left font-display text-3xl text-[var(--color-cream)] transition-colors hover:text-[var(--color-gold)]"
               >
                 {l.label}
               </button>
@@ -349,18 +387,18 @@ function Home({
   return (
     <>
       <section className="relative min-h-[100svh] overflow-hidden">
-        <img src={HERO} alt="Wood-fired pizza at HungryMan" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={HERO} alt="Wood-fired pizza at HungryMan" className="hero-image absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-ink)] via-[rgba(14,12,10,0.55)] to-[rgba(14,12,10,0.35)]" />
         <div className="relative mx-auto flex min-h-[100svh] max-w-[1280px] flex-col justify-end px-5 pb-16 pt-32 md:px-8 md:pb-24">
-          <p className="eyebrow fade-up">Nabinagar · Savar · Est. kitchen</p>
-          <h1 className="mt-5 max-w-4xl font-display text-[56px] leading-[0.92] tracking-tight md:text-[92px]">
+          <p className="eyebrow fade-up-1">Nabinagar · Savar · Est. kitchen</p>
+          <h1 className="fade-up-2 mt-5 max-w-4xl font-display text-[56px] leading-[0.92] tracking-tight md:text-[92px]">
             Taste the difference.
             <span className="block italic text-[var(--color-gold)]">Feel the love.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-[17px] text-[var(--color-cream-muted)]">
+          <p className="fade-up-3 mt-6 max-w-xl text-[17px] text-[var(--color-cream-muted)]">
             Town’s #1 pizza brand. Dough fermented overnight, fire that does the talking, and a dining room built for long tables.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="fade-up-4 mt-8 flex flex-wrap items-center gap-3">
             <button className="btn btn-primary" onClick={() => go("menu")}>
               Order ahead
             </button>
@@ -368,7 +406,7 @@ function Home({
               Reserve a table
             </button>
           </div>
-          <div className="mt-12 flex flex-wrap gap-8 border-t border-[var(--color-line)] pt-6 text-sm text-[var(--color-cream-muted)]">
+          <div className="fade-up-5 mt-12 flex flex-wrap gap-8 border-t border-[var(--color-line)] pt-6 text-sm text-[var(--color-cream-muted)]">
             <Stat k="4.6" v="Guest rating" />
             <Stat k="540+" v="Verified notes" />
             <Stat k="2" v="Kitchens" />
@@ -377,8 +415,8 @@ function Home({
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-[1280px] gap-12 px-5 py-20 md:grid-cols-2 md:items-center md:px-8 md:py-28">
-        <div>
+      <section className="section-reveal mx-auto grid max-w-[1280px] gap-12 px-5 py-20 md:grid-cols-2 md:items-center md:px-8 md:py-28">
+        <div className="reveal-child">
           <p className="eyebrow">The kitchen</p>
           <h2 className="mt-4 font-display text-5xl leading-none md:text-6xl">Fire, flour, and a little patience.</h2>
           <div className="gold-rule mt-6" />
@@ -392,15 +430,19 @@ function Home({
             Read our story
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <img src={CHEF} alt="Chef stretching dough" className="h-[420px] w-full object-cover" />
-          <img src={OVEN} alt="Pizza entering the oven" className="mt-10 h-[420px] w-full object-cover" />
+        <div className="reveal-child grid grid-cols-2 gap-4">
+          <div className="overflow-hidden">
+            <img src={CHEF} alt="Chef stretching dough" className="h-[420px] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04]" />
+          </div>
+          <div className="mt-10 overflow-hidden">
+            <img src={OVEN} alt="Pizza entering the oven" className="h-[420px] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04]" />
+          </div>
         </div>
       </section>
 
-      <section className="border-y border-[var(--color-line)] bg-[var(--color-ink-soft)] py-20 md:py-24">
+      <section className="section-reveal border-y border-[var(--color-line)] bg-[var(--color-ink-soft)] py-20 md:py-24">
         <div className="mx-auto max-w-[1280px] px-5 md:px-8">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div className="reveal-child flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <div>
               <p className="eyebrow">The board</p>
               <h2 className="mt-3 font-display text-5xl">What the town orders.</h2>
@@ -410,8 +452,8 @@ function Home({
             </button>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featured.map((item) => (
-              <article key={item.id} className="menu-card group">
+            {featured.map((item, idx) => (
+              <article key={item.id} className="menu-card group reveal-child" style={{ transitionDelay: `${idx * 80}ms` }}>
                 <button
                   onClick={() => onOpenItem(item)}
                   className="w-full bg-transparent p-0 text-left"
@@ -421,7 +463,7 @@ function Home({
                     <img
                       src={item.image}
                       alt=""
-                      className="aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
                     />
                     {item.badge && (
                       <span className="absolute left-3 top-3 bg-[var(--color-gold)] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink)]">
@@ -443,8 +485,8 @@ function Home({
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
-        <div className="flex items-end justify-between gap-6">
+      <section className="section-reveal mx-auto max-w-[1280px] px-5 py-20 md:px-8 md:py-28">
+        <div className="reveal-child flex items-end justify-between gap-6">
           <div>
             <p className="eyebrow">Feedbacks (540+)</p>
             <h2 className="mt-3 font-display text-5xl">What our guests keep saying.</h2>
@@ -455,8 +497,8 @@ function Home({
           </div>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-2">
-          {reviews.map((r) => (
-            <blockquote key={r.name} className="border border-[var(--color-line)] bg-[var(--color-ink-soft)] p-7">
+          {reviews.map((r, idx) => (
+            <blockquote key={r.name} className="reveal-child border border-[var(--color-line)] bg-[var(--color-ink-soft)] p-7 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[var(--color-line-strong)] hover:shadow-lg" style={{ transitionDelay: `${idx * 100}ms` }}>
               <Stars n={r.rating} />
               <p className="mt-4 font-display text-[26px] leading-snug italic text-[var(--color-cream)]">“{r.text}”</p>
               <footer className="mt-6 text-sm text-[var(--color-stone)]">
@@ -467,10 +509,10 @@ function Home({
         </div>
       </section>
 
-      <section className="relative overflow-hidden">
-        <img src={INTERIOR} alt="Dining room at HungryMan" className="h-[520px] w-full object-cover md:h-[640px]" />
+      <section className="section-reveal relative overflow-hidden">
+        <img src={INTERIOR} alt="Dining room at HungryMan" className="h-[520px] w-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] md:h-[640px]" />
         <div className="absolute inset-0 bg-[rgba(14,12,10,0.55)]" />
-        <div className="absolute inset-0 mx-auto flex max-w-[1280px] flex-col justify-end px-5 py-16 md:px-8">
+        <div className="reveal-child absolute inset-0 mx-auto flex max-w-[1280px] flex-col justify-end px-5 py-16 md:px-8">
           <p className="eyebrow">Two kitchens. One fire.</p>
           <h2 className="mt-3 max-w-2xl font-display text-5xl md:text-6xl">Find us in Niribili and Savar.</h2>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -510,17 +552,19 @@ function MenuPage({
   }, [filter, query]);
 
   return (
-    <section className="pt-28">
+    <section className="section-reveal is-visible pt-28">
       <div className="mx-auto max-w-[1280px] px-5 md:px-8">
-        <p className="eyebrow">The menu</p>
-        <div className="mt-3 flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <h1 className="font-display text-5xl md:text-7xl">Order for the table.</h1>
-          <p className="max-w-sm text-sm text-[var(--color-stone)]">
-            Dine-in or collect. Add to cart, choose a kitchen, and we will have it ready at the time you pick.
-          </p>
+        <div className="reveal-child">
+          <p className="eyebrow">The menu</p>
+          <div className="mt-3 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <h1 className="font-display text-5xl md:text-7xl">Order for the table.</h1>
+            <p className="max-w-sm text-sm text-[var(--color-stone)]">
+              Dine-in or collect. Add to cart, choose a kitchen, and we will have it ready at the time you pick.
+            </p>
+          </div>
         </div>
 
-        <div className="sticky top-[78px] z-30 mt-10 border-y border-[var(--color-line)] bg-[rgba(14,12,10,0.94)] py-4 backdrop-blur">
+        <div className="reveal-child sticky top-[78px] z-30 mt-10 border-y border-[var(--color-line)] bg-[rgba(14,12,10,0.94)] py-4 backdrop-blur transition-all duration-300">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="no-scrollbar flex gap-2 overflow-x-auto" role="tablist" aria-label="Menu categories">
               {categories.map((c) => (
@@ -529,10 +573,10 @@ function MenuPage({
                   role="tab"
                   aria-selected={filter === c.id}
                   onClick={() => setFilter(c.id)}
-                  className={`shrink-0 rounded-full border px-4 py-2 text-[12px] uppercase tracking-[0.16em] ${
+                  className={`shrink-0 rounded-full border px-4 py-2 text-[12px] uppercase tracking-[0.16em] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                     filter === c.id
-                      ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-[var(--color-ink)]"
-                      : "border-[var(--color-line)] bg-transparent text-[var(--color-cream-muted)] hover:border-[var(--color-gold)]"
+                      ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-[var(--color-ink)] shadow-[0_2px_12px_rgba(201,163,106,0.3)] scale-[1.02]"
+                      : "border-[var(--color-line)] bg-transparent text-[var(--color-cream-muted)] hover:border-[var(--color-gold)] hover:text-[var(--color-cream)] hover:scale-[1.02]"
                   }`}
                 >
                   {c.label}
@@ -551,10 +595,10 @@ function MenuPage({
           </div>
         </div>
 
-        <p className="mt-6 text-sm text-[var(--color-gold)]">{items.length} dishes</p>
+        <p className="reveal-child mt-6 text-sm text-[var(--color-gold)]">{items.length} dishes</p>
 
         {items.length === 0 ? (
-          <div className="py-24 text-center">
+          <div className="card-fade-in py-24 text-center">
             <p className="font-display text-3xl">Nothing matches that search.</p>
             <button
               className="btn btn-ghost mt-6"
@@ -568,8 +612,12 @@ function MenuPage({
           </div>
         ) : (
           <div className="grid gap-x-6 gap-y-12 py-10 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <article key={item.id} className="menu-card group">
+            {items.map((item, idx) => (
+              <article
+                key={item.id}
+                className="menu-card group card-fade-in"
+                style={{ animationDelay: `${Math.min(idx * 35, 350)}ms` }}
+              >
                 <button
                   onClick={() => onOpenItem(item)}
                   className="w-full bg-transparent p-0 text-left"
@@ -578,7 +626,7 @@ function MenuPage({
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="aspect-[5/4] w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                      className="aspect-[5/4] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
                     />
                   </div>
                   <div className="flex items-start justify-between gap-4 pt-4">
@@ -605,15 +653,19 @@ function MenuPage({
 
 function AboutPage({ go }: { go: (p: Page) => void }) {
   return (
-    <section className="pt-28">
+    <section className="section-reveal is-visible pt-28">
       <div className="mx-auto max-w-[1100px] px-5 pb-24 md:px-8">
-        <p className="eyebrow">Our kitchen</p>
-        <h1 className="mt-4 max-w-3xl font-display text-5xl leading-[0.95] md:text-7xl">
-          A pizza house that takes the long way.
-        </h1>
-        <div className="gold-rule mt-8" />
-        <img src={TABLE} alt="A set table at HungryMan" className="mt-12 h-[480px] w-full object-cover" />
-        <div className="mt-12 grid gap-10 md:grid-cols-2">
+        <div className="reveal-child">
+          <p className="eyebrow">Our kitchen</p>
+          <h1 className="mt-4 max-w-3xl font-display text-5xl leading-[0.95] md:text-7xl">
+            A pizza house that takes the long way.
+          </h1>
+          <div className="gold-rule mt-8" />
+        </div>
+        <div className="reveal-child mt-12 overflow-hidden">
+          <img src={TABLE} alt="A set table at HungryMan" className="h-[480px] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02]" />
+        </div>
+        <div className="reveal-child mt-12 grid gap-10 md:grid-cols-2">
           <p className="text-[18px] leading-8 text-[var(--color-cream-muted)]">
             HungryMan is a neighbourhood kitchen with two addresses and one standard. We opened in Nabinagar, Niribili, because we wanted a room that felt like a long dinner at a friend’s house — fire in the back, tables that stay late, pizza that does not apologise for being pizza.
           </p>
@@ -626,14 +678,18 @@ function AboutPage({ go }: { go: (p: Page) => void }) {
             { t: "Overnight dough", d: "A slow ferment for a lighter crumb and a deeper crust." },
             { t: "Hot fire", d: "Pies finish in under two minutes. The blister is the point." },
             { t: "Honest plates", d: "Short menu. Seasonal specials. Nothing we would not eat ourselves." },
-          ].map((x) => (
-            <div key={x.t} className="border border-[var(--color-line)] p-6">
+          ].map((x, idx) => (
+            <div
+              key={x.t}
+              className="reveal-child border border-[var(--color-line)] p-6 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-[var(--color-line-strong)] hover:shadow-lg"
+              style={{ transitionDelay: `${idx * 100}ms` }}
+            >
               <h3 className="font-display text-3xl">{x.t}</h3>
               <p className="mt-3 text-sm text-[var(--color-stone)]">{x.d}</p>
             </div>
           ))}
         </div>
-        <div className="mt-12 flex flex-wrap gap-3">
+        <div className="reveal-child mt-12 flex flex-wrap gap-3">
           <button className="btn btn-primary" onClick={() => go("menu")}>
             See the menu
           </button>
@@ -648,18 +704,26 @@ function AboutPage({ go }: { go: (p: Page) => void }) {
 
 function LocationsPage({ go }: { go: (p: Page) => void }) {
   return (
-    <section className="pt-28">
+    <section className="section-reveal is-visible pt-28">
       <div className="mx-auto max-w-[1280px] px-5 pb-24 md:px-8">
-        <p className="eyebrow">Visit</p>
-        <h1 className="mt-3 font-display text-5xl md:text-7xl">Two kitchens. Same fire.</h1>
+        <div className="reveal-child">
+          <p className="eyebrow">Visit</p>
+          <h1 className="mt-3 font-display text-5xl md:text-7xl">Two kitchens. Same fire.</h1>
+        </div>
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
           {locations.map((loc, i) => (
-            <article key={loc.id} className="overflow-hidden border border-[var(--color-line)] bg-[var(--color-ink-soft)]">
-              <img
-                src={i === 0 ? INTERIOR : OVEN}
-                alt={loc.name}
-                className="h-64 w-full object-cover"
-              />
+            <article
+              key={loc.id}
+              className="reveal-child group overflow-hidden border border-[var(--color-line)] bg-[var(--color-ink-soft)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-[var(--color-line-strong)] hover:shadow-xl"
+              style={{ transitionDelay: `${i * 120}ms` }}
+            >
+              <div className="overflow-hidden">
+                <img
+                  src={i === 0 ? INTERIOR : OVEN}
+                  alt={loc.name}
+                  className="h-64 w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+                />
+              </div>
               <div className="p-8">
                 <p className="eyebrow">{loc.area}</p>
                 <h2 className="mt-3 font-display text-4xl">{loc.name}</h2>
@@ -691,7 +755,7 @@ function LocationsPage({ go }: { go: (p: Page) => void }) {
             </article>
           ))}
         </div>
-        <div className="mt-12 grid gap-8 border border-[var(--color-line)] p-8 md:grid-cols-3">
+        <div className="reveal-child mt-12 grid gap-8 border border-[var(--color-line)] p-8 md:grid-cols-3 transition-colors duration-300 hover:border-[var(--color-line-strong)]">
           {hours.map((h) => (
             <div key={h.day}>
               <p className="text-sm uppercase tracking-[0.16em] text-[var(--color-stone)]">{h.day}</p>
@@ -753,7 +817,7 @@ function ReservePage({
 
   if (done) {
     return (
-      <section className="mx-auto max-w-xl px-5 pb-28 pt-36 text-center">
+      <section className="section-reveal is-visible mx-auto max-w-xl px-5 pb-28 pt-36 text-center modal-pop">
         <p className="eyebrow">Request received</p>
         <h1 className="mt-4 font-display text-5xl">We are setting the table.</h1>
         <p className="mt-4 text-[var(--color-cream-muted)]">
@@ -768,9 +832,9 @@ function ReservePage({
   }
 
   return (
-    <section className="pt-28">
+    <section className="section-reveal is-visible pt-28">
       <div className="mx-auto grid max-w-[1100px] gap-12 px-5 pb-24 md:grid-cols-[1.1fr_0.9fr] md:px-8">
-        <div>
+        <div className="reveal-child">
           <p className="eyebrow">Reserve</p>
           <h1 className="mt-3 font-display text-5xl md:text-6xl">A table, when you want it.</h1>
           <p className="mt-5 max-w-md text-[var(--color-cream-muted)]">
@@ -829,7 +893,7 @@ function ReservePage({
             </button>
           </form>
         </div>
-        <aside className="h-fit border border-[var(--color-line)] bg-[var(--color-ink-soft)] p-8">
+        <aside className="reveal-child h-fit border border-[var(--color-line)] bg-[var(--color-ink-soft)] p-8 transition-colors duration-300 hover:border-[var(--color-line-strong)]">
           <p className="eyebrow">House notes</p>
           <ul className="mt-6 space-y-4 text-sm text-[var(--color-cream-muted)]">
             <li>We hold reservations for 15 minutes past the booked time.</li>
@@ -858,12 +922,12 @@ function ItemModal({
   const price = size ? item.sizes?.find((s) => s.label === size)?.price ?? item.price : item.price;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/70 p-0 md:items-center md:p-6" onClick={onClose} role="presentation">
+    <div className="backdrop-fade fixed inset-0 z-[70] flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm md:items-center md:p-6" onClick={onClose} role="presentation">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="item-title"
-        className="drawer max-h-[92vh] w-full overflow-y-auto bg-[var(--color-ink)] md:max-w-[880px] md:border md:border-[var(--color-line)]"
+        className="modal-pop max-h-[92vh] w-full overflow-y-auto bg-[var(--color-ink)] shadow-2xl md:max-w-[880px] md:border md:border-[var(--color-line)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="grid md:grid-cols-2">
@@ -891,10 +955,10 @@ function ItemModal({
                     <button
                       key={s.label}
                       onClick={() => setSize(s.label)}
-                      className={`rounded-full border px-4 py-2 text-sm ${
+                      className={`rounded-full border px-4 py-2 text-sm transition-all duration-200 ${
                         size === s.label
-                          ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-[var(--color-ink)]"
-                          : "border-[var(--color-line)] bg-transparent"
+                          ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-[var(--color-ink)] scale-[1.02]"
+                          : "border-[var(--color-line)] bg-transparent hover:border-[var(--color-gold)]"
                       }`}
                     >
                       {s.label} · {formatPrice(s.price)}
@@ -946,12 +1010,12 @@ function CartDrawer({
   onBrowse: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-[70] bg-black/60" onClick={onClose} role="presentation">
+    <div className="backdrop-fade fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm" onClick={onClose} role="presentation">
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Your order"
-        className="drawer absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-[var(--color-line)] bg-[var(--color-ink)]"
+        className="drawer-slide absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-[var(--color-line)] bg-[var(--color-ink)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-[var(--color-line)] px-6 py-5">
@@ -982,11 +1046,11 @@ function CartDrawer({
                     {c.size && <p className="text-xs text-[var(--color-stone)]">{c.size}</p>}
                     {c.note && <p className="text-xs italic text-[var(--color-stone)]">{c.note}</p>}
                     <div className="mt-3 flex items-center gap-3">
-                      <button className="h-8 w-8 border border-[var(--color-line)] bg-transparent" onClick={() => onQty(c.key, c.qty - 1)} aria-label={`Remove one ${c.item.name}`}>
+                      <button className="h-8 w-8 border border-[var(--color-line)] bg-transparent transition-colors hover:border-[var(--color-gold)]" onClick={() => onQty(c.key, c.qty - 1)} aria-label={`Remove one ${c.item.name}`}>
                         −
                       </button>
                       <span>{c.qty}</span>
-                      <button className="h-8 w-8 border border-[var(--color-line)] bg-transparent" onClick={() => onQty(c.key, c.qty + 1)} aria-label={`Add one ${c.item.name}`}>
+                      <button className="h-8 w-8 border border-[var(--color-line)] bg-transparent transition-colors hover:border-[var(--color-gold)]" onClick={() => onQty(c.key, c.qty + 1)} aria-label={`Add one ${c.item.name}`}>
                         +
                       </button>
                     </div>
@@ -1051,12 +1115,12 @@ function CheckoutModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[75] overflow-y-auto bg-black/70 p-4 md:p-8" onClick={onClose} role="presentation">
+    <div className="backdrop-fade fixed inset-0 z-[75] overflow-y-auto bg-black/70 p-4 backdrop-blur-sm md:p-8" onClick={onClose} role="presentation">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-title"
-        className="drawer mx-auto max-w-3xl border border-[var(--color-line)] bg-[var(--color-ink)]"
+        className="modal-pop mx-auto max-w-3xl border border-[var(--color-line)] bg-[var(--color-ink)] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-[var(--color-line)] px-6 py-5">
@@ -1078,10 +1142,10 @@ function CheckoutModal({
                   key={s}
                   type="button"
                   onClick={() => set("service", s)}
-                  className={`rounded-md border px-4 py-4 text-sm uppercase tracking-[0.14em] ${
+                  className={`rounded-md border px-4 py-4 text-sm uppercase tracking-[0.14em] transition-all duration-200 ${
                     form.service === s
-                      ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-[var(--color-ink)]"
-                      : "border-[var(--color-line)] bg-transparent"
+                      ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-[var(--color-ink)] scale-[1.02]"
+                      : "border-[var(--color-line)] bg-transparent hover:border-[var(--color-gold)]"
                   }`}
                 >
                   {s === "dine-in" ? "Dine-in" : "Collect"}
@@ -1153,8 +1217,8 @@ function CheckoutModal({
 
 function OrderSuccess({ id, onClose, onMenu }: { id: string; onClose: () => void; onMenu: () => void }) {
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-5">
-      <div role="dialog" aria-modal="true" aria-labelledby="success-title" className="max-w-md border border-[var(--color-line)] bg-[var(--color-ink)] p-10 text-center">
+    <div className="backdrop-fade fixed inset-0 z-[80] flex items-center justify-center bg-black/75 p-5 backdrop-blur-sm">
+      <div role="dialog" aria-modal="true" aria-labelledby="success-title" className="modal-pop max-w-md border border-[var(--color-line)] bg-[var(--color-ink)] p-10 text-center shadow-2xl">
         <p className="eyebrow">Confirmed</p>
         <h2 id="success-title" className="mt-3 font-display text-4xl">
           The kitchen has your ticket.
@@ -1177,7 +1241,7 @@ function OrderSuccess({ id, onClose, onMenu }: { id: string; onClose: () => void
 
 function Footer({ go }: { go: (p: Page) => void }) {
   return (
-    <footer className="mt-8 border-t border-[var(--color-line)]">
+    <footer className="section-reveal mt-8 border-t border-[var(--color-line)]">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-5 py-16 md:grid-cols-4 md:px-8">
         <div>
           <p className="font-display text-4xl tracking-[0.18em]">HungryMan</p>
