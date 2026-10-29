@@ -16,6 +16,7 @@ import {
   type LocationBranch,
   type MenuItem,
 } from "./data";
+import { HoloMenuCard } from "./HoloCard";
 
 type Page = "home" | "menu" | "about" | "locations" | "reserve";
 type CartItem = {
@@ -453,32 +454,12 @@ function Home({
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {featured.map((item, idx) => (
-              <article key={item.id} className="menu-card group reveal-child" style={{ transitionDelay: `${idx * 80}ms` }}>
-                <button
-                  onClick={() => onOpenItem(item)}
-                  className="w-full bg-transparent p-0 text-left"
-                  aria-label={`${item.name}, ${formatPrice(item.price)}`}
-                >
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={item.image}
-                      alt=""
-                      className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
-                    />
-                    {item.badge && (
-                      <span className="absolute left-3 top-3 bg-[var(--color-gold)] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink)]">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-                  <div className="pt-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-display text-2xl leading-tight">{item.name}</h3>
-                      <span className="shrink-0 text-sm text-[var(--color-gold)]">{formatPrice(item.price)}</span>
-                    </div>
-                    <p className="mt-2 line-clamp-2 text-sm text-[var(--color-stone)]">{item.description}</p>
-                  </div>
-                </button>
+              <article key={item.id} className="reveal-child" style={{ transitionDelay: `${idx * 80}ms` }}>
+                <HoloMenuCard
+                  item={item}
+                  onOpen={onOpenItem}
+                  variant="featured"
+                />
               </article>
             ))}
           </div>
@@ -615,33 +596,14 @@ function MenuPage({
             {items.map((item, idx) => (
               <article
                 key={item.id}
-                className="menu-card group card-fade-in"
+                className="card-fade-in"
                 style={{ animationDelay: `${Math.min(idx * 35, 350)}ms` }}
               >
-                <button
-                  onClick={() => onOpenItem(item)}
-                  className="w-full bg-transparent p-0 text-left"
-                >
-                  <div className="overflow-hidden">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="aspect-[5/4] w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
-                    />
-                  </div>
-                  <div className="flex items-start justify-between gap-4 pt-4">
-                    <div>
-                      <div className="flex flex-wrap gap-2">
-                        {item.vegetarian && <Tag>Veg</Tag>}
-                        {item.spicy && <Tag>Spicy</Tag>}
-                        {item.popular && <Tag>Popular</Tag>}
-                      </div>
-                      <h2 className="mt-2 font-display text-[28px] leading-tight">{item.name}</h2>
-                      <p className="mt-2 line-clamp-2 text-sm text-[var(--color-stone)]">{item.description}</p>
-                    </div>
-                    <span className="shrink-0 pt-7 text-[var(--color-gold)]">{formatPrice(item.price)}</span>
-                  </div>
-                </button>
+                <HoloMenuCard
+                  item={item}
+                  onOpen={onOpenItem}
+                  variant="menu"
+                />
               </article>
             ))}
           </div>
